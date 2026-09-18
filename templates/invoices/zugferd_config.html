@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoices:zugferd_dashboard' %}">ZUGFeRD</a></li>
+<li class="breadcrumb-item active">Konfiguration</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-gear-fill text-primary"></i>
+                ZUGFeRD-Konfiguration
+            </h1>
+            <p class="text-muted">Konfigurieren Sie Ihre Firmenangaben für ZUGFeRD-Rechnungen</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building"></i>
+                        Firmenangaben
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Company Information -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-info-circle"></i>
+                                Grundlegende Informationen
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="company_name" class="form-label">Firmenname *</label>
+                                    <input type="text" class="form-control" id="company_name" 
+                                           name="company_name" value="{{ config.company_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="company_address" class="form-label">Adresse *</label>
+                                    <input type="text" class="form-control" id="company_address" 
+                                           name="company_address" value="{{ config.company_address }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="company_postal_code" class="form-label">Postleitzahl *</label>
+                                    <input type="text" class="form-control" id="company_postal_code" 
+                                           name="company_postal_code" value="{{ config.company_postal_code }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="company_city" class="form-label">Stadt *</label>
+                                    <input type="text" class="form-control" id="company_city" 
+                                           name="company_city" value="{{ config.company_city }}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="company_country" class="form-label">Land *</label>
+                                    <input type="text" class="form-control" id="company_country" 
+                                           name="company_country" value="{{ config.company_country }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tax Information -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-receipt"></i>
+                                Steuerangaben
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="vat_number" class="form-label">Umsatzsteuer-IdNr. (USt-IdNr.) *</label>
+                                    <input type="text" class="form-control" id="vat_number" 
+                                           name="vat_number" value="{{ config.vat_number }}" 
+                                           placeholder="z.B. DE123456789" required>
+                                    <div class="form-text">Format: DE + 9 oder 11 Ziffern</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tax_number" class="form-label">Steuernummer</label>
+                                    <input type="text" class="form-control" id="tax_number" 
+                                           name="tax_number" value="{{ config.tax_number|default:'' }}" 
+                                           placeholder="z.B. 123/456/7890">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Default Profile -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-file-earmark-text"></i>
+                                ZUGFeRD-Profil
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="default_profile" class="form-label">Standard ZUGFeRD-Profil</label>
+                                    <select class="form-select" id="default_profile" name="default_profile">
+                                        <option value="">Bitte wählen...</option>
+                                        {% for profile in profiles %}
+                                        <option value="{{ profile.id }}" 
+                                                {% if config.default_profile_id == profile.id %}selected{% endif %}>
+                                            {{ profile.code }} - {{ profile.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="form-text">
+                                        Wählen Sie das Standard-Profil für neue ZUGFeRD-Rechnungen.
+                                        <a href="#" data-bs-toggle="tooltip" title="Basic: Minimal, EN16931: EU-Standard, Extended: Vollständig">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Settings -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-envelope"></i>
+                                E-Mail-Einstellungen
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="email_from" class="form-label">Absender E-Mail *</label>
+                                    <input type="email" class="form-control" id="email_from" 
+                                           name="email_from" value="{{ config.email_from }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="email_subject" class="form-label">Betreff</label>
+                                    <input type="text" class="form-control" id="email_subject" 
+                                           name="email_subject" value="{{ config.email_subject }}" 
+                                           placeholder="z.B. Rechnung {invoice_number}">
+                                </div>
+                                <div class="col-12">
+                                    <label for="email_body" class="form-label">E-Mail-Text</label>
+                                    <textarea class="form-control" id="email_body" name="email_body" 
+                                              rows="4" placeholder="z.B. Anbei erhalten Sie die Rechnung {invoice_number} im ZUGFeRD-Format.">{{ config.email_body }}</textarea>
+                                    <div class="form-text">
+                                        Verfügbare Platzhalter: {invoice_number}, {customer_name}, {total_amount}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Peppol Settings -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-globe"></i>
+                                Peppol-Einstellungen
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="peppol_id" class="form-label">Peppol-ID</label>
+                                    <input type="text" class="form-control" id="peppol_id" 
+                                           name="peppol_id" value="{{ config.peppol_id|default:'' }}" 
+                                           placeholder="z.B. 0192:123456789">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" id="peppol_enabled" 
+                                               name="peppol_enabled" 
+                                               {% if config.peppol_enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="peppol_enabled">
+                                            Peppol aktiviert
+                                        </label>
+                                        <div class="form-text">
+                                            Aktivieren Sie Peppol für den direkten Austausch von ZUGFeRD-Rechnungen
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'invoices:zugferd_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Zurück
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Informationen zu ZUGFeRD-Profilen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Profil</th>
+                                    <th>Beschreibung</th>
+                                    <th>Verwendung</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in profiles %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ profile.code }}</strong><br>
+                                        <small class="text-muted">{{ profile.name }}</small>
+                                    </td>
+                                    <td>{{ profile.description }}</td>
+                                    <td>
+                                        {% if profile.code == 'basic' %}
+                                        <span class="badge bg-secondary">Minimale Anforderungen</span>
+                                        {% elif profile.code == 'en16931' %}
+                                        <span class="badge bg-primary">EU-Standard (EN 16931)</span>
+                                        {% elif profile.code == 'extended' %}
+                                        <span class="badge bg-success">Vollständige Daten</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ profile.code }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        Keine Profile verfügbar
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-muted small">
+                        <strong>Hinweis:</strong> Das Extended-Profil wird für den vollständigen Datenaustausch empfohlen.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize tooltips
+$(function () {
+    $('[data-bs-toggle="tooltip"]').tooltip();
+});
+</script>
+{% endblock %}

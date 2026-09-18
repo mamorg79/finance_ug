@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoices:invoice_list' %}">Rechnungen</a></li>
+<li class="breadcrumb-item active">ZUGFeRD Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-file-earmark-x-fill text-primary"></i>
+                ZUGFeRD Dashboard
+            </h1>
+            <p class="text-muted">Digitale Rechnungen im ZUGFeRD-Format verwalten</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-file-earmark-x text-primary fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Gesamt</h6>
+                            <h3 class="mb-0">{{ total_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-upload text-success fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Exportiert</h6>
+                            <h3 class="mb-0">{{ exported_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-download text-info fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Importiert</h6>
+                            <h3 class="mb-0">{{ imported_count }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 col-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                                <i class="bi bi-send text-warning fs-4"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">Übertragungen</h6>
+                            <h3 class="mb-0">{{ transmissions|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Aktionen</h5>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'invoices:zugferd_config' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-gear"></i> Konfiguration
+                        </a>
+                        <a href="{% url 'invoices:import_zugferd' %}" class="btn btn-outline-success">
+                            <i class="bi bi-upload"></i> ZUGFeRD importieren
+                        </a>
+                        <a href="{% url 'invoices:zugferd_invoice_list' %}" class="btn btn-outline-info">
+                            <i class="bi bi-list"></i> Alle ZUGFeRD-Rechnungen
+                        </a>
+                        <a href="{% url 'invoices:transmission_list' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-send"></i> Übertragungen
+                        </a>
+                        <a href="{% url 'invoices:invoice_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Zurück zu Rechnungen
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Status -->
+    {% if config %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building"></i>
+                        Firmenkonfiguration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Firmenname:</dt>
+                                <dd class="col-sm-8">{{ config.company_name }}</dd>
+                                
+                                <dt class="col-sm-4">Adresse:</dt>
+                                <dd class="col-sm-8">{{ config.company_address }}, {{ config.company_postal_code }} {{ config.company_city }}</dd>
+                                
+                                <dt class="col-sm-4">Land:</dt>
+                                <dd class="col-sm-8">{{ config.company_country }}</dd>
+                                
+                                <dt class="col-sm-4">USt-IdNr.:</dt>
+                                <dd class="col-sm-8">{{ config.vat_number }}</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Steuernummer:</dt>
+                                <dd class="col-sm-8">{{ config.tax_number|default:"-" }}</dd>
+                                
+                                <dt class="col-sm-4">Peppol-ID:</dt>
+                                <dd class="col-sm-8">{{ config.peppol_id|default:"-" }}</dd>
+                                
+                                <dt class="col-sm-4">Peppol aktiviert:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-{% if config.peppol_enabled %}success{% else %}secondary{% endif %}">
+                                        {% if config.peppol_enabled %}Ja{% else %}Nein{% endif %}
+                                    </span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">E-Mail:</dt>
+                                <dd class="col-sm-8">{{ config.email_from }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                Bitte konfigurieren Sie zuerst Ihre ZUGFeRD-Einstellungen unter 
+                <a href="{% url 'invoices:zugferd_config' %}" class="alert-link">Konfiguration</a>.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent ZUGFeRD Invoices -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Letzte ZUGFeRD-Rechnungen
+                    </h5>
+                    <a href="{% url 'invoices:zugferd_invoice_list' %}" class="btn btn-sm btn-outline-primary">
+                        Alle anzeigen
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if zugferd_invoices %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rechnungsnummer</th>
+                                    <th>Kunde</th>
+                                    <th>Profil</th>
+                                    <th>Typ</th>
+                                    <th>Status</th>
+                                    <th>Erstellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for zugferd in zugferd_invoices|slice:":5" %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoices:invoice_detail' zugferd.invoice.id %}">
+                                            {{ zugferd.invoice.invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ zugferd.invoice.customer.name }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ zugferd.profile.code }}</span>
+                                    </td>
+                                    <td>
+                                        {% if zugferd.invoice_type_code == '380' %}
+                                        <span class="badge bg-success">Rechnung</span>
+                                        {% elif zugferd.invoice_type_code == '381' %}
+                                        <span class="badge bg-info">Gutschrift</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ zugferd.invoice_type_code }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if zugferd.is_exported %}
+                                        <span class="badge bg-success">Exportiert</span>
+                                        {% endif %}
+                                        {% if zugferd.is_imported %}
+                                        <span class="badge bg-info">Importiert</span>
+                                        {% endif %}
+                                        {% if not zugferd.is_exported and not zugferd.is_imported %}
+                                        <span class="badge bg-secondary">Entwurf</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ zugferd.created_at|date:"d.m.Y H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'invoices:download_zugferd_xml' zugferd.id %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <a href="{% url 'invoices:send_zugferd_email' zugferd.invoice.id %}" 
+                                           class="btn btn-sm btn-outline-success" title="Senden">
+                                            <i class="bi bi-envelope"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-file-earmark-x fs-1"></i>
+                        <p class="mt-2">Keine ZUGFeRD-Rechnungen gefunden.</p>
+                        <p>Importieren Sie eine ZUGFeRD-Datei oder exportieren Sie eine bestehende Rechnung.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transmissions -->
+    {% if transmissions %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-send"></i>
+                        Letzte Übertragungen
+                    </h5>
+                    <a href="{% url 'invoices:transmission_list' %}" class="btn btn-sm btn-outline-primary">
+                        Alle anzeigen
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rechnung</th>
+                                    <th>Methode</th>
+                                    <th>Status</th>
+                                    <th>Empfänger</th>
+                                    <th>Gesendet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transmission in transmissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoices:invoice_detail' transmission.zugferd_invoice.invoice.id %}">
+                                            {{ transmission.zugferd_invoice.invoice.invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.method == 'email' %}primary{% elif transmission.method == 'peppol' %}success{% else %}secondary{% endif %}">
+                                            {{ transmission.get_method_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.status == 'sent' %}primary{% elif transmission.status == 'delivered' %}success{% elif transmission.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                                            {{ transmission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transmission.recipient_email|default:transmission.recipient_peppol_id|default:"-" }}</td>
+                                    <td>{{ transmission.sent_at|date:"d.m.Y H:i"|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.badge {
+    font-size: 0.85em;
+}
+</style>
+{% endblock %}
