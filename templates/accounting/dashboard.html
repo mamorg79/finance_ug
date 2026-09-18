@@ -138,8 +138,8 @@
                                     </td>
                                     <td>{{ transaction.description|truncatechars:50 }}</td>
                                     <td class="text-end">
-                                        {% with total_debit total_credit=transaction.get_total_amount %}
-                                            {{ total_debit|floatformat:2 }}
+                                        {% with transaction.get_total_amount as total_amount %}
+                                            {{ total_amount|floatformat:2 }}
                                         {% endwith %}
                                     </td>
                                 </tr>
