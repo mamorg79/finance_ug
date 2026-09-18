@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Finance UG{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-plus"></i> {{ page_title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Account Number -->
+                        <div class="mb-3">
+                            <label for="{{ form.account_number.id_for_label }}" class="form-label">
+                                Kontonummer
+                                {% if form.account_number.field.required %}
+                                <span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.account_number }}
+                            {% if form.account_number.errors %}
+                            <div class="text-danger">
+                                {{ form.account_number.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.account_number.help_text }}</div>
+                        </div>
+                        
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                Kontenbezeichnung
+                                {% if form.name.field.required %}
+                                <span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger">
+                                {{ form.name.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.name.help_text }}</div>
+                        </div>
+                        
+                        <!-- Account Type -->
+                        <div class="mb-3">
+                            <label for="{{ form.account_type.id_for_label }}" class="form-label">
+                                Kontenart
+                                {% if form.account_type.field.required %}
+                                <span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.account_type }}
+                            {% if form.account_type.errors %}
+                            <div class="text-danger">
+                                {{ form.account_type.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.account_type.help_text }}</div>
+                        </div>
+                        
+                        <!-- Account Group -->
+                        <div class="mb-3">
+                            <label for="{{ form.account_group.id_for_label }}" class="form-label">
+                                Kontengruppe
+                                {% if form.account_group.field.required %}
+                                <span class="text-danger">*</span>{% endif %}
+                            </label>
+                            {{ form.account_group }}
+                            {% if form.account_group.errors %}
+                            <div class="text-danger">
+                                {{ form.account_group.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.account_group.help_text }}</div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                Beschreibung
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger">
+                                {{ form.description.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.description.help_text }}</div>
+                        </div>
+                        
+                        <!-- Is Active -->
+                        <div class="mb-3 form-check form-switch">
+                            <input type="checkbox" class="form-check-input" id="{{ form.is_active.id_for_label }}" 
+                                   name="{{ form.is_active.name }}" {% if form.is_active.value %}checked{% endif %}>
+                            <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                                Aktiv
+                            </label>
+                            {% if form.is_active.errors %}
+                            <div class="text-danger">
+                                {{ form.is_active.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.is_active.help_text }}</div>
+                        </div>
+                        
+                        <!-- Tax Rate -->
+                        <div class="mb-3">
+                            <label for="{{ form.tax_rate.id_for_label }}" class="form-label">
+                                Steuersatz
+                            </label>
+                            {{ form.tax_rate }}
+                            {% if form.tax_rate.errors %}
+                            <div class="text-danger">
+                                {{ form.tax_rate.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.tax_rate.help_text }}</div>
+                        </div>
+                        
+                        <!-- Currency -->
+                        <div class="mb-3">
+                            <label for="{{ form.currency.id_for_label }}" class="form-label">
+                                Währung
+                            </label>
+                            {{ form.currency }}
+                            {% if form.currency.errors %}
+                            <div class="text-danger">
+                                {{ form.currency.errors|first }}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.currency.help_text }}</div>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Speichern
+                            </button>
+                            <a href="{% url 'accounting:account_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-lg"></i> Abbrechen
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>
+{% endblock %}
