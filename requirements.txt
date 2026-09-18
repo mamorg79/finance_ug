@@ -8,4 +8,3 @@ crispy-bootstrap5==2024.10
 django-crispy-forms==2.3
 django-filter==24.3
 python-decouple==3.8
-psycopg2-binary==2.9.10
