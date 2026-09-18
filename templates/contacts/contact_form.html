@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }} - Finance UG{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus"></i> {{ page_title }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Contact Information Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-person-fill"></i> Grunddaten
+                            </h5>
+                            <div class="row">
+                                <!-- Contact Type -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.contact_type.id_for_label }}" class="form-label">
+                                        Kontaktart
+                                        {% if form.contact_type.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ form.contact_type }}
+                                    {% if form.contact_type.errors %}
+                                    <div class="text-danger">{{ form.contact_type.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.contact_type.help_text }}</div>
+                                </div>
+                                
+                                <!-- Contact Number -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.contact_number.id_for_label }}" class="form-label">
+                                        Kontonummer
+                                    </label>
+                                    {{ form.contact_number }}
+                                    {% if form.contact_number.errors %}
+                                    <div class="text-danger">{{ form.contact_number.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.contact_number.help_text }}</div>
+                                </div>
+                                
+                                <!-- Industry -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.industry.id_for_label }}" class="form-label">
+                                        Branche
+                                    </label>
+                                    {{ form.industry }}
+                                    {% if form.industry.errors %}
+                                    <div class="text-danger">{{ form.industry.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.industry.help_text }}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Company Name -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        Firmenname
+                                        {% if form.name.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                    <div class="text-danger">{{ form.name.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.name.help_text }}</div>
+                                </div>
+                                
+                                <!-- Tax Number -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.tax_number.id_for_label }}" class="form-label">
+                                        Steuernummer
+                                    </label>
+                                    {{ form.tax_number }}
+                                    {% if form.tax_number.errors %}
+                                    <div class="text-danger">{{ form.tax_number.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.tax_number.help_text }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Person Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-person"></i> Ansprechpartner
+                            </h5>
+                            <div class="row">
+                                <!-- First Name -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                        Vorname
+                                    </label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                    <div class="text-danger">{{ form.first_name.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Last Name -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                        Nachname
+                                    </label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                    <div class="text-danger">{{ form.last_name.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Position -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.position.id_for_label }}" class="form-label">
+                                        Position
+                                    </label>
+                                    {{ form.position }}
+                                    {% if form.position.errors %}
+                                    <div class="text-danger">{{ form.position.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contact Information Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-envelope"></i> Kontaktdaten
+                            </h5>
+                            <div class="row">
+                                <!-- Email -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                                        E-Mail
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Phone -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                        Telefon
+                                    </label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                    <div class="text-danger">{{ form.phone.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Mobile -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.mobile.id_for_label }}" class="form-label">
+                                        Mobil
+                                    </label>
+                                    {{ form.mobile }}
+                                    {% if form.mobile.errors %}
+                                    <div class="text-danger">{{ form.mobile.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Fax -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.fax.id_for_label }}" class="form-label">
+                                        Fax
+                                    </label>
+                                    {{ form.fax }}
+                                    {% if form.fax.errors %}
+                                    <div class="text-danger">{{ form.fax.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Address Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-geo-alt"></i> Adresse
+                            </h5>
+                            <div class="row">
+                                <!-- Street -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.street.id_for_label }}" class="form-label">
+                                        Straße
+                                    </label>
+                                    {{ form.street }}
+                                    {% if form.street.errors %}
+                                    <div class="text-danger">{{ form.street.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- House Number -->
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.house_number.id_for_label }}" class="form-label">
+                                        Hausnummer
+                                    </label>
+                                    {{ form.house_number }}
+                                    {% if form.house_number.errors %}
+                                    <div class="text-danger">{{ form.house_number.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Postcode -->
+                                <div class="col-md-3 mb-3">
+                                    <label for="{{ form.postcode.id_for_label }}" class="form-label">
+                                        PLZ
+                                    </label>
+                                    {{ form.postcode }}
+                                    {% if form.postcode.errors %}
+                                    <div class="text-danger">{{ form.postcode.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- City -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.city.id_for_label }}" class="form-label">
+                                        Ort
+                                    </label>
+                                    {{ form.city }}
+                                    {% if form.city.errors %}
+                                    <div class="text-danger">{{ form.city.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Country -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.country.id_for_label }}" class="form-label">
+                                        Land
+                                    </label>
+                                    {{ form.country }}
+                                    {% if form.country.errors %}
+                                    <div class="text-danger">{{ form.country.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-info-circle"></i> Zusätzliche Informationen
+                            </h5>
+                            <div class="row">
+                                <!-- Website -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label">
+                                        Website
+                                    </label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                    <div class="text-danger">{{ form.website.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- VAT Number -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.vat_number.id_for_label }}" class="form-label">
+                                        USt-IdNr.
+                                    </label>
+                                    {{ form.vat_number }}
+                                    {% if form.vat_number.errors %}
+                                    <div class="text-danger">{{ form.vat_number.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Notes -->
+                            <div class="mb-3">
+                                <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                    Notizen
+                                </label>
+                                {{ form.notes }}
+                                {% if form.notes.errors %}
+                                <div class="text-danger">{{ form.notes.errors|first }}</div>
+                                {% endif %}
+                                <div class="form-text">{{ form.notes.help_text }}</div>
+                            </div>
+                            
+                            <!-- Is Active -->
+                            <div class="mb-3 form-check form-switch">
+                                <input type="checkbox" class="form-check-input" 
+                                       id="{{ form.is_active.id_for_label }}" 
+                                       name="{{ form.is_active.name }}" 
+                                       {% if form.is_active.value %}checked{% endif %}>
+                                <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                                    Aktiv
+                                </label>
+                                {% if form.is_active.errors %}
+                                <div class="text-danger">{{ form.is_active.errors|first }}</div>
+                                {% endif %}
+                                <div class="form-text">{{ form.is_active.help_text }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Speichern
+                            </button>
+                            {% if contact %}
+                            <a href="{% url 'contacts:contact_detail' contact.id %}" class="btn btn-secondary">
+                                <i class="bi bi-x-lg"></i> Abbrechen
+                            </a>
+                            {% else %}
+                            <a href="{% url 'contacts:contact_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-lg"></i> Abbrechen
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-header h4 {
+        font-size: 1.25rem;
+    }
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    h5.text-primary {
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 8px;
+    }
+</style>
+{% endblock %}
