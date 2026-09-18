@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoices:invoice_list' %}">Rechnungen</a></li>
+<li class="breadcrumb-item"><a href="{% url 'invoices:invoice_detail' invoice.id %}">{{ invoice.invoice_number }}</a></li>
+<li class="breadcrumb-item active">ZUGFeRD senden</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-envelope-fill text-primary"></i>
+                ZUGFeRD per E-Mail senden
+            </h1>
+            <p class="text-muted">Senden Sie Rechnung {{ invoice.invoice_number }} als ZUGFeRD-XML per E-Mail</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 col-12 mx-auto">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-paper-plane"></i>
+                        E-Mail-Einstellungen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Invoice Information -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-info-circle"></i>
+                                Rechnung
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Rechnungsnummer</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ invoice.invoice_number }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kunde</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ invoice.customer.name }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Kunden-E-Mail</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ invoice.customer.email|default:"-" }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gesamtbetrag</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ invoice.total_amount|format_currency }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Settings -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-envelope"></i>
+                                E-Mail-Daten
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="recipient_email" class="form-label">Empfänger E-Mail-Adresse *</label>
+                                    <input type="email" class="form-control" id="recipient_email" 
+                                           name="recipient_email" 
+                                           value="{{ invoice.customer.email|default:'' }}" required>
+                                    <div class="form-text">
+                                        Die E-Mail-Adresse des Empfängers. Standardmäßig wird die E-Mail-Adresse des Kunden verwendet.
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="subject" class="form-label">Betreff</label>
+                                    <input type="text" class="form-control" id="subject" 
+                                           name="subject" 
+                                           value="Rechnung {{ invoice.invoice_number }}" 
+                                           placeholder="Betreff der E-Mail">
+                                </div>
+                                <div class="col-12">
+                                    <label for="message" class="form-label">Nachricht</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" 
+                                              placeholder="Nachricht an den Empfänger...">{{ config.email_body|default:"Anbei erhalten Sie die Rechnung " ~ invoice.invoice_number ~ " im ZUGFeRD-Format." }}</textarea>
+                                    <div class="form-text">
+                                        Verfügbare Platzhalter: {invoice_number}, {customer_name}, {total_amount}, {due_date}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Attachments -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-paperclip"></i>
+                                Anhänge
+                            </h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">ZUGFeRD-XML</h6>
+                                            <p class="text-muted small mb-0">
+                                                Die Rechnung wird im ZUGFeRD-XML-Format angehängt
+                                            </p>
+                                        </div>
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-lg"></i> Enthalten
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="include_pdf" 
+                                           name="include_pdf" checked>
+                                    <label class="form-check-label" for="include_pdf">
+                                        PDF-Rechnung beifügen
+                                    </label>
+                                    <div class="form-text">
+                                        Fügen Sie zusätzlich eine PDF-Version der Rechnung bei
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Configuration Info -->
+                        {% if config %}
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-primary">
+                                <i class="bi bi-gear"></i>
+                                Konfiguration
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Absender</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ config.email_from }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Firmenname</label>
+                                    <div class="form-control-plaintext p-2 bg-light rounded">
+                                        {{ config.company_name }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'invoices:zugferd_config' %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i> Konfiguration bearbeiten
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'invoices:invoice_detail' invoice.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Abbrechen
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-envelope"></i> E-Mail senden
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transmission History -->
+    {% if zugferd_invoice.transmissions.count > 0 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Bisherige Übertragungen
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Methode</th>
+                                    <th>Status</th>
+                                    <th>Empfänger</th>
+                                    <th>Gesendet</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transmission in zugferd_invoice.transmissions.all|slice:":5" %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.method == 'email' %}primary{% elif transmission.method == 'peppol' %}success{% else %}secondary{% endif %}">
+                                            {{ transmission.get_method_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.status == 'sent' %}primary{% elif transmission.status == 'delivered' %}success{% elif transmission.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                                            {{ transmission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transmission.recipient_email|default:"-" }}</td>
+                                    <td>{{ transmission.sent_at|date:"d.m.Y H:i"|default:"-" }}</td>
+                                    <td>
+                                        {% if transmission.response_status %}
+                                        <span class="badge bg-info">{{ transmission.response_status }}</span>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-fill recipient email if empty
+$(document).ready(function() {
+    const recipientInput = $('#recipient_email');
+    if (recipientInput.val() === '') {
+        // Try to use customer email
+        const customerEmail = '{{ invoice.customer.email|default:"".replace("@", "\\u0040") }}';
+        if (customerEmail) {
+            recipientInput.val(customerEmail);
+        }
+    }
+});
+</script>
+{% endblock %}

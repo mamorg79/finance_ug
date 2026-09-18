@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoices:zugferd_dashboard' %}">ZUGFeRD</a></li>
+<li class="breadcrumb-item active">Übertragungen</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-send-fill text-primary"></i>
+                ZUGFeRD-Übertragungen
+            </h1>
+            <p class="text-muted">Verlauf aller ZUGFeRD-Rechnungsübertragungen</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="q" class="form-label">Suche</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="q" name="q" 
+                                       value="{{ request.GET.q }}" placeholder="Rechnungsnummer oder E-Mail">
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="method" class="form-label">Methode</label>
+                            <select class="form-select" id="method" name="method">
+                                <option value="">Alle</option>
+                                <option value="email" {% if request.GET.method == 'email' %}selected{% endif %}>E-Mail</option>
+                                <option value="peppol" {% if request.GET.method == 'peppol' %}selected{% endif %}>Peppol</option>
+                                <option value="download" {% if request.GET.method == 'download' %}selected{% endif %}>Download</option>
+                                <option value="api" {% if request.GET.method == 'api' %}selected{% endif %}>API</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">Alle</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Ausstehend</option>
+                                <option value="sent" {% if request.GET.status == 'sent' %}selected{% endif %}>Gesendet</option>
+                                <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>Zugestellt</option>
+                                <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Fehlgeschlagen</option>
+                                <option value="received" {% if request.GET.status == 'received' %}selected{% endif %}>Empfangen</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'invoices:zugferd_dashboard' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Zurück
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list"></i>
+                        Ergebnisse ({{ transmissions.paginator.count }})
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if transmissions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rechnung</th>
+                                    <th>Methode</th>
+                                    <th>Status</th>
+                                    <th>Empfänger</th>
+                                    <th>Gesendet</th>
+                                    <th>Zugestellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transmission in transmissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoices:invoice_detail' transmission.zugferd_invoice.invoice.id %}">
+                                            {{ transmission.zugferd_invoice.invoice.invoice_number }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ transmission.zugferd_invoice.invoice.customer.name|default:"Unbekannt" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.method == 'email' %}primary{% elif transmission.method == 'peppol' %}success{% elif transmission.method == 'api' %}info{% else %}secondary{% endif %}">
+                                            {{ transmission.get_method_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if transmission.status == 'sent' %}primary{% elif transmission.status == 'delivered' %}success{% elif transmission.status == 'failed' %}danger{% elif transmission.status == 'received' %}info{% else %}secondary{% endif %}">
+                                            {{ transmission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ transmission.recipient_email|default:transmission.recipient_peppol_id|default:"-" }}
+                                    </td>
+                                    <td>{{ transmission.sent_at|date:"d.m.Y H:i"|default:"-" }}</td>
+                                    <td>{{ transmission.delivered_at|date:"d.m.Y H:i"|default:"-" }}</td>
+                                    <td>
+                                        <a href="{% url 'invoices:transmission_detail' transmission.id %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="p-3">
+                        <nav aria-label="Pagination">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if transmissions.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.method %}&method={{ request.GET.method }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        <i class="bi bi-chevron-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ transmissions.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.method %}&method={{ request.GET.method }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                <li class="page-item disabled">
+                                    <span class="page-link">
+                                        Seite {{ transmissions.number }} von {{ transmissions.paginator.num_pages }}
+                                    </span>
+                                </li>
+                                
+                                {% if transmissions.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ transmissions.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.method %}&method={{ request.GET.method }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ transmissions.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.method %}&method={{ request.GET.method }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                        <i class="bi bi-chevron-double-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-send fs-1"></i>
+                        <p class="mt-2">Keine Übertragungen gefunden.</p>
+                        <p>Senden Sie eine ZUGFeRD-Rechnung, um Übertragungen zu sehen.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

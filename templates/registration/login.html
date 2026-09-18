@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Anmelden - Finance UG{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="bi bi-box-arrow-in-right"></i> Anmelden
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Benutzername</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Benutzername" required autofocus>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Passwort</label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Passwort" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Angemeldet bleiben</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Anmelden
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Bitte melden Sie sich mit Ihren Zugangsdaten an.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

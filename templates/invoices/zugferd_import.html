@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'invoices:zugferd_dashboard' %}">ZUGFeRD</a></li>
+<li class="breadcrumb-item active">Importieren</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6">
+                <i class="bi bi-upload text-primary"></i>
+                ZUGFeRD importieren
+            </h1>
+            <p class="text-muted">Importieren Sie eine ZUGFeRD-Rechnung aus einer XML-Datei</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 col-md-10 col-12 mx-auto">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-x"></i>
+                        XML-Datei auswählen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4 text-center">
+                            <div class="border-2 border-dashed rounded p-5 mb-3" style="border-style: dashed !important;">
+                                <i class="bi bi-cloud-arrow-up text-primary fs-1"></i>
+                                <h5 class="mt-3">Ziehen Sie eine Datei hierher oder klicken Sie zum Auswählen</h5>
+                                <p class="text-muted small">
+                                    Unterstützte Formate: XML-Dateien im ZUGFeRD-Format (CIUS)<br>
+                                    Maximale Dateigröße: 10 MB
+                                </p>
+                                <input type="file" class="form-control d-none" id="xml_file" name="xml_file" 
+                                       accept=".xml,application/xml" required>
+                                <label for="xml_file" class="btn btn-primary mt-2">
+                                    <i class="bi bi-folder-open"></i> Datei auswählen
+                                </label>
+                            </div>
+                            
+                            <div id="file-preview" class="d-none">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    <strong>Ausgewählte Datei:</strong> <span id="filename"></span>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="clearFile()">
+                                        <i class="bi bi-x"></i> Entfernen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="mb-3">
+                                <i class="bi bi-info-circle text-primary"></i>
+                                Informationen zum Import
+                            </h6>
+                            <div class="alert alert-info">
+                                <ul class="mb-0 list-unstyled">
+                                    <li>
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Die Rechnung wird als neue Rechnung in Ihrem System angelegt
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Alle Rechnungspositionen werden importiert
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-check-circle text-success"></i>
+                                        Die XML-Datei wird für die Nachverfolgung gespeichert
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-exclamation-circle text-warning"></i>
+                                        Bitte prüfen Sie die importierten Daten auf Vollständigkeit
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'invoices:zugferd_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Abbrechen
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="import-btn">
+                                <i class="bi bi-upload"></i> Importieren
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Imports -->
+    {% if zugferd_invoices %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Letzte Importe
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rechnungsnummer</th>
+                                    <th>Kunde</th>
+                                    <th>Datum</th>
+                                    <th>Betrag</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for zugferd in zugferd_invoices|slice:":5" %}
+                                {% if zugferd.is_imported %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'invoices:invoice_detail' zugferd.invoice.id %}">
+                                            {{ zugferd.invoice.invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td>{{ zugferd.invoice.customer.name|default:"Unbekannt" }}</td>
+                                    <td>{{ zugferd.invoice.date|date:"d.m.Y" }}</td>
+                                    <td>{{ zugferd.invoice.total_amount|format_currency }}</td>
+                                    <td>
+                                        <a href="{% url 'invoices:invoice_detail' zugferd.invoice.id %}" 
+                                           class="btn btn-sm btn-outline-primary" title="Anzeigen">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle file selection
+$(document).ready(function() {
+    const fileInput = $('#xml_file');
+    const filePreview = $('#file-preview');
+    const filenameSpan = $('#filename');
+    
+    fileInput.on('change', function() {
+        if (this.files.length > 0) {
+            filenameSpan.text(this.files[0].name);
+            filePreview.removeClass('d-none');
+        } else {
+            filePreview.addClass('d-none');
+        }
+    });
+});
+
+function clearFile() {
+    $('#xml_file').val('');
+    $('#file-preview').addClass('d-none');
+}
+</script>
+{% endblock %}
