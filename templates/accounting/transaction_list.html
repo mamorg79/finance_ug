@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Finance UG{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> {{ page_title }}
+                </h4>
+                <a href="{% url 'accounting:transaction_create' %}" class="btn btn-light">
+                    <i class="bi bi-plus-lg"></i> Neue Buchung
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filter and Search -->
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-2">
+                    <label for="date_from" class="form-label">Von Datum</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from" 
+                           value="{{ date_from|default:'' }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="date_to" class="form-label">Bis Datum</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to" 
+                           value="{{ date_to|default:'' }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="doc_type" class="form-label">Belegart</label>
+                    <select class="form-select" id="doc_type" name="doc_type">
+                        <option value="">Alle Belegarten</option>
+                        {% for doc_type in document_types %}
+                        <option value="{{ doc_type.code }}" 
+                                {% if selected_doc_type == doc_type.code %}selected{% endif %}>
+                            {{ doc_type.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="q" class="form-label">Suche</label>
+                    <input type="text" class="form-control" id="q" name="q" 
+                           value="{{ search_query|default:'' }}" placeholder="Belegnr., Beschreibung oder Referenz">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Filtern
+                    </button>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <a href="{% url 'accounting:transaction_list' %}" class="btn btn-secondary w-100">
+                        <i class="bi bi-arrow-clockwise"></i> Zurücksetzen
+                    </a>
+                </div>
+            </form>
+
+            <!-- Results Count -->
+            <div class="mb-3">
+                <span class="text-muted">
+                    Zeige {{ transactions.paginator.count }} Buchungen
+                    {% if transactions.paginator.count > 0 %}
+                        (Seite {{ transactions.number }} von {{ transactions.paginator.num_pages }})
+                    {% endif %}
+                </span>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Datum</th>
+                            <th>Belegnr.</th>
+                            <th>Belegart</th>
+                            <th>Beschreibung</th>
+                            <th>Referenz</th>
+                            <th class="text-end">Betrag</th>
+                            <th class="text-center">Gebucht</th>
+                            <th class="text-center">Storniert</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in transactions %}
+                        <tr>
+                            <td>{{ transaction.date|date:"d.m.Y" }}</td>
+                            <td>
+                                <a href="{% url 'accounting:transaction_detail' transaction.id %}">
+                                    {{ transaction.document_number }}
+                                </a>
+                            </td>
+                            <td>{{ transaction.document_type.name }}</td>
+                            <td>{{ transaction.description|truncatechars:50 }}</td>
+                            <td>{{ transaction.reference|default:"-"|truncatechars:30 }}</td>
+                            <td class="text-end">
+                                {{ transaction.get_total_amount|floatformat:2 }}
+                            </td>
+                            <td class="text-center">
+                                {% if transaction.is_posted %}
+                                <span class="badge bg-success">Ja</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Nein</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if transaction.is_reversed %}
+                                <span class="badge bg-danger">Ja</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Nein</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'accounting:transaction_detail' transaction.id %}" 
+                                       class="btn btn-outline-primary" title="Anzeigen">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if not transaction.is_posted %}
+                                    <a href="{% url 'accounting:transaction_update' transaction.id %}" 
+                                       class="btn btn-outline-secondary" title="Bearbeiten">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'accounting:transaction_delete' transaction.id %}" 
+                                       class="btn btn-outline-danger" title="Löschen">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if transaction.is_posted and not transaction.is_reversed %}
+                                    <a href="{% url 'accounting:transaction_reverse' transaction.id %}" 
+                                       class="btn btn-outline-warning" title="Stornieren">
+                                        <i class="bi bi-arrow-return-left"></i>
+                                    </a>
+                                    {% endif %}
+                                    {% if not transaction.is_posted %}
+                                    <a href="{% url 'accounting:transaction_post' transaction.id %}" 
+                                       class="btn btn-outline-success" title="Buchen">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox"></i> Keine Buchungen gefunden
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if transactions.paginator.num_pages > 1 %}
+            <nav aria-label="Buchungen Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if transactions.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_doc_type %}&doc_type={{ selected_doc_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.previous_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_doc_type %}&doc_type={{ selected_doc_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in transactions.paginator.page_range %}
+                        {% if transactions.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > transactions.number|add:"-3" and num < transactions.number|add:"3" %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_doc_type %}&doc_type={{ selected_doc_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if transactions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.next_page_number }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_doc_type %}&doc_type={{ selected_doc_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ transactions.paginator.num_pages }}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}{% if selected_doc_type %}&doc_type={{ selected_doc_type }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
